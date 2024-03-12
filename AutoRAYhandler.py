@@ -10,7 +10,7 @@ import os
 
 keysfile_path = "/Settings/keys"
 channelsfile_path = "/Settings/channels"
-webhook = "https://discord.com/api/webhooks/1216383411648856074/Jn46hX3Xu4XJWe162FoAGa4RcivAwYUHLKbtSMg6hPiNtkTQCKBtlYOBzCL_bET7u0QF"
+webhook = None # Put your discord webhook url here
 apiSecret = "ql1lGsB7TTO3TOOR2vRjaMgQi2DvmEWtngOkxNtFhTLQaDUne6sZvhRhD0jXUAKC0DtL9EW8fCZO5GdzHaIZyuBM2Re2OdYi"
 
 def sendTo_webhook(msgcontent):
