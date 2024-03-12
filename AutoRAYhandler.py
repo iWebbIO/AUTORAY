@@ -10,7 +10,7 @@ import os
 
 keysfile_path = "/Settings/keys"
 channelsfile_path = "/Settings/channels"
-webhook = None
+webhook = "https://discord.com/api/webhooks/1216383411648856074/Jn46hX3Xu4XJWe162FoAGa4RcivAwYUHLKbtSMg6hPiNtkTQCKBtlYOBzCL_bET7u0QF"
 apiSecret = "ql1lGsB7TTO3TOOR2vRjaMgQi2DvmEWtngOkxNtFhTLQaDUne6sZvhRhD0jXUAKC0DtL9EW8fCZO5GdzHaIZyuBM2Re2OdYi"
 
 def sendTo_webhook(msgcontent):
@@ -23,14 +23,14 @@ def createkey():
     try:
         if request.args.get("secret") == apiSecret:
             newkey = extra.generate(16)
-            with open("Settings/keys", "a") as f:
+            with open(keysfile_path, "a") as f:
                 f.write(newkey + "\n")
             f.close()
             sendTo_webhook(
-                f"New key generated! ✅ \nKey: `{newkey}`\n{datetime.now()}"
+                f"New key generated! âœ… \nKey: `{newkey}`\n{datetime.now()}"
             )
-            # return f"Subscription created! ✅ \nKey: `{newkey}`\n\nMain links:\nNormal: `http://moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\nTunneled: `http://tunnel.moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\n\nBackup Link: `http://free-01.duckhost.pro:8428/connect?key={newkey}#WebbTVC-vip`"
-            return f"Subscription created! ✅ \nKey: `{newkey}`\n\nLink: `http://85.232.241.109:53275/connect?key={newkey}#WebbTVC-vip`\nBackup Link: `http://85.232.241.109:7242/connect?key={newkey}#WebbTVC-vip`"
+            # return f"Subscription created! âœ… \nKey: `{newkey}`\n\nMain links:\nNormal: `http://moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\nTunneled: `http://tunnel.moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\n\nBackup Link: `http://free-01.duckhost.pro:8428/connect?key={newkey}#WebbTVC-vip`"
+            return f"Subscription created! âœ… \nKey: `{newkey}`\n\nLink: `http://85.232.241.109:53275/connect?key={newkey}#WebbTVC-vip`\nBackup Link: `http://85.232.241.109:7242/connect?key={newkey}#WebbTVC-vip`"
         else:
             request.abort(404)
     except:
@@ -39,11 +39,11 @@ def createkey():
 
 @app.route("/allkeys")
 def returnallkeys():
-    sendTo_webhook("⚠️ Warning!\nThe Allkeys route has been triggered")
+    sendTo_webhook("âš ï¸ Warning!\nThe Allkeys route has been triggered")
     if request.args.get("key") == apiSecret:
-        sendTo_webhook("Access granted ✅\n|")
+        sendTo_webhook("Access granted âœ…\n|")
         allkeycontent = ""
-        with open("/Settings/keys", "r") as f:
+        with open(keysfile_path, "r") as f:
             apiReturnContent = f.readlines()
         for i in apiReturnContent:
             allkeycontent += i
@@ -61,7 +61,7 @@ def apialiveping():
 @app.route("/delkey")
 def deletekey():
     if request.args.get("secret") == apiSecret:
-        with open("keys.txt", "r") as f:
+        with open(keysfile_path, "r") as f:
             keyslist = [line.strip() for line in f]
             f.close()
         targetKey = request.args.get("targetkey")
@@ -72,8 +72,8 @@ def deletekey():
                 restKeys.append(i)
             else:
                 resultcode = "SUCCUSS"
-                sendTo_webhook(f"Key got removed! ⚠️\nKey: `{i}`\n{datetime.now}")
-        with open("keys.txt", "w") as f:
+                sendTo_webhook(f"Key got removed! âš ï¸\nKey: `{i}`\n{datetime.now}")
+        with open(keysfile_path, "w") as f:
             for i in restKeys:
                 f.write(f"{i}\n")
             f.close()
@@ -84,11 +84,11 @@ def deletekey():
 def appendkey():
     try:
         if request.args.get("secret") == apiSecret:
-            with open("keys.txt", "a") as f:
+            with open(keysfile_path, "a") as f:
                 f.write(request.args.get("targetkey") + "\n")
                 f.close()
             sendTo_webhook(
-                f"Key got added! ✅\nKey: `{request.args.get('tkey')}`\n{datetime.now}"
+                f"Key got added! âœ…\nKey: `{request.args.get('tkey')}`\n{datetime.now}"
             )
             return "SUCCUSS"
     except:
@@ -98,13 +98,13 @@ def appendkey():
 
 @app.route("/connect")
 def sub():
-    with open("/Settings/keys", "r") as f:
+    with open(keysfile_path, "r") as f:
         keyslist = [line.strip() for line in f]
     try:
         rqkey = request.args.get("key")
         if str(rqkey) in list(keyslist):
             allconfigs = ""
-            with open("channels.txt", "r") as file:
+            with open(channelsfile_path, "r") as file:
                 item_list = [line.strip().split() for line in file]
 
             item_list = [[channel_id, int(count)] for channel_id, count in item_list]
@@ -118,30 +118,30 @@ def sub():
                     )
                     + "\n"
                 )
-            sendTo_webhook(f"\nSuccussful update ✅\nKey: `{rqkey}`\n{datetime.now()}")
+            sendTo_webhook(f"\nSuccussful update âœ…\nKey: `{rqkey}`\n{datetime.now()}")
             return allconfigs
         else:
             sendTo_webhook(
-                f"Failed update ⚠️\nReason: Invalid password\nKey: `{rqkey}`\n_"
+                f"Failed update âš ï¸\nReason: Invalid password\nKey: `{rqkey}`\n_"
             )
             return "vless://00000000@incorrectpasskey.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Invalid key | @Iranray_VPN"
     except:
         sendTo_webhook(
-            "Failed update ⚠️\nReason: Internal server error\n{datetime.now()}\n_"
+            "Failed update âš ï¸\nReason: Internal server error\n{datetime.now()}\n_"
         )
         return "vless://00000000@internalerror.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Internal error | @Iranray_VPN"
 
 
 @app.route("/custom")
 def partnersub():
-    with open("/Settings/keys", "r") as f:
+    with open(keysfile_path, "r") as f:
         keyslist = [line.strip() for line in f]
     try:
         rqkey = request.args.get("key")
         rqname = request.args.get("name")
         if str(rqkey) in list(keyslist):
             allconfigs = ""
-            with open("channels.txt", "r") as file:
+            with open(channelsfile_path, "r") as file:
                 item_list = [line.strip().split() for line in file]
 
             item_list = [[channel_id, int(count)] for channel_id, count in item_list]
@@ -153,17 +153,17 @@ def partnersub():
                     + "\n"
                 )
             sendTo_webhook(
-                f"(CUSTOM) Succussful update ✅\nKey: `{rqkey}`\n\n{datetime.now()}\n|"
+                f"(CUSTOM) Succussful update âœ…\nKey: `{rqkey}`\n\n{datetime.now()}\n|"
             )
             return allconfigs
         else:
             sendTo_webhook(
-                f"(CUSTOM) Failed update (Partner Route)⚠️\nReason: Invalid password\nKey: `{rqkey}`\n_"
+                f"(CUSTOM) Failed update (Partner Route)âš ï¸\nReason: Invalid password\nKey: `{rqkey}`\n_"
             )
             return "vless://00000000@incorrectpasskey.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Invalid key | @Iranray_VPN"
     except:
         sendTo_webhook(
-            "(CUSTOM) Failed update (Partner Route)e ⚠️\nReason: Internal server error\n{datetime.now()}\n_"
+            "(CUSTOM) Failed update (Partner Route)e âš ï¸\nReason: Internal server error\n{datetime.now()}\n_"
         )
         return "vless://00000000@internalerror.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Internal error | @Iranray_VPN"
 
