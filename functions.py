@@ -37,7 +37,7 @@ def get_current_time():
     iran_tz = pytz.timezone("Asia/Tehran")
 
     # Get the current time in Iran
-    current_time = datetime.now(iran_tz)
+    current_time = datetime.datetime.now(iran_tz)
 
     # Format the time as "Day_Of_the_week Hour:Minute"
     formatted_time = current_time.strftime("%A %H:%M")
