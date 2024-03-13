@@ -73,7 +73,7 @@ def deletekey():
                 restKeys.append(i)
             else:
                 resultcode = "SUCCUSS"
-                sendTo_webhook(f"Key got removed! âš ï¸\nKey: `{i}`\n{datetime.now}")
+                sendTo_webhook(f"Key got removed! âš ï¸\nKey: `{i}`\n{datetime.now()}")
         with open(keysfile_path, "w") as f:
             for i in restKeys:
                 f.write(f"{i}\n")
