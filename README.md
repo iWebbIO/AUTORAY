@@ -11,7 +11,37 @@
 # Community servers
 - You can find community links and server in [autoray-community-servers](https://github.com/iWebbIO/Autoray-public-servers)
 
-# Host it yourself!
-- You can make your own Autoray server ...
+# Host it yourself! **(Linux DEB)**
+### Step 1: Download `dashboard.py`
+- Run the following command to download the `dashboard.py` file<br>
+This script will help you install AutoRAY
+<br>`wget https://github.com/iWebbIO/AUTORAY/releases/download/v1.0.2-RELEASE/dashboard.py`
+### Step 2: Update & Upgrade packages using `APT` and install `python3`
+- `sudo apt update && sudo apt upgrade -y && sudo apt install python3 python3-pip`
+### Step 3: Run `dashboard.py`
+- To install AutoRAY you have to Run the `dashboard.py` script<br>
+- Make sure you are in the dorectory where you downloaded the fle before running this command
+`python3 dashboard.py`
+### Step 4: Go through the installation process
+### Step 5: Set up Channels, Keys and discord webhook
+- Change your directory to the location that you installed AutoRAY and locate the `Settings` folder
+- Insert your Telegram channel IDs in the `channels` file and put your API Access keys in the `keys` file
+To setup Discord webhooks and log activity on your AutoRAY server visit [How to connect AutoRAY to a Discord Webhook](https://github.com/iWebbIO/AUTORAY/wiki/Connect-AutoRAY-to-a-Discord-webhook)
 
-### *We are working on the guide for self-hosting. The code will be uploaded soon*
+### Step 6:
+- After the installation is complete and the settings are configured, Run the `AutoRAYhandler.py` file by running ```python3 AutoRAYhandler.py```
+
+# Connect to your server
+- to connect to your AutoRAY server, simply use the template below:<br>
+`http://ServerIP:Port/connect?key=YOURKEY`
+### What do these mean?
+- `ServerIP`: Replace with the IP of your server
+- `Port`: Replace with your server's port (Default: 2873)
+- `YOURKEY`: One of the Api Access keys that you inserted into the `/Settings/keys` file
+
+For example i have a server that has an IPv4 address (123.456.789.123)
+and i Run the Autoray server on it and i put a key named `free` in the keys file
+This would be the URL i'd have to connect to:
+`http:123.456.789.123:2873/connect?key=FREE`
+
+Remember that the program is case-sensitive and when you choose a key like `hGhKsoiU` you'll have to put the exact same thing when connecting to your server
