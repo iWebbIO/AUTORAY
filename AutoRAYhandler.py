@@ -28,21 +28,21 @@ def createkey():
                 f.write(newkey + "\n")
             f.close()
             sendTo_webhook(
-                f"New key generated! âœ… \nKey: `{newkey}`\n{datetime.now()}"
+                f"New key generated! Ã¢Å“â€¦ \nKey: `{newkey}`\n{datetime.now()}"
             )
-            # return f"Subscription created! âœ… \nKey: `{newkey}`\n\nMain links:\nNormal: `http://moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\nTunneled: `http://tunnel.moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\n\nBackup Link: `http://free-01.duckhost.pro:8428/connect?key={newkey}#WebbTVC-vip`"
-            return f"Subscription created! âœ… \nKey: `{newkey}`\n\nLink: `http://85.232.241.109:53275/connect?key={newkey}#WebbTVC-vip`\nBackup Link: `http://85.232.241.109:7242/connect?key={newkey}#WebbTVC-vip`"
+            # return f"Subscription created! Ã¢Å“â€¦ \nKey: `{newkey}`\n\nMain links:\nNormal: `http://moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\nTunneled: `http://tunnel.moriw.net.eu.org:2052/connect?key={newkey}#WebbTVC-vip`\n\nBackup Link: `http://free-01.duckhost.pro:8428/connect?key={newkey}#WebbTVC-vip`"
+            return f"Subscription created! Ã¢Å“â€¦ \nKey: `{newkey}`\n\nLink: `http://85.232.241.109:53275/connect?key={newkey}#WebbTVC-vip`\nBackup Link: `http://85.232.241.109:7242/connect?key={newkey}#WebbTVC-vip`"
         else:
-            request.abort(404)
-    except:
-        request.abort(404)
+            print("AUTH_ERROR /createkey")
+    except Exception as e:
+        print(e)
 
 
 @app.route("/allkeys")
 def returnallkeys():
-    sendTo_webhook("âš ï¸ Warning!\nThe Allkeys route has been triggered")
+    sendTo_webhook("Ã¢Å¡Â Ã¯Â¸Â Warning!\nThe Allkeys route has been triggered")
     if request.args.get("key") == apiSecret:
-        sendTo_webhook("Access granted âœ…\n|")
+        sendTo_webhook("Access granted Ã¢Å“â€¦\n|")
         allkeycontent = ""
         with open(keysfile_path, "r") as f:
             apiReturnContent = f.readlines()
@@ -73,7 +73,7 @@ def deletekey():
                 restKeys.append(i)
             else:
                 resultcode = "SUCCUSS"
-                sendTo_webhook(f"Key got removed! âš ï¸\nKey: `{i}`\n{datetime.now()}")
+                sendTo_webhook(f"Key got removed! Ã¢Å¡Â Ã¯Â¸Â\nKey: `{i}`\n{datetime.now()}")
         with open(keysfile_path, "w") as f:
             for i in restKeys:
                 f.write(f"{i}\n")
@@ -89,7 +89,7 @@ def appendkey():
                 f.write(request.args.get("targetkey") + "\n")
                 f.close()
             sendTo_webhook(
-                f"Key got added! âœ…\nKey: `{request.args.get('tkey')}`\n{datetime.now}"
+                f"Key got added! Ã¢Å“â€¦\nKey: `{request.args.get('tkey')}`\n{datetime.now()}"
             )
             return "SUCCUSS"
     except:
@@ -119,16 +119,17 @@ def sub():
                     )
                     + "\n"
                 )
-            sendTo_webhook(f"\nSuccussful update âœ…\nKey: `{rqkey}`\n{datetime.now()}")
+            sendTo_webhook(f"\nSuccussful update Ã¢Å“â€¦\nKey: `{rqkey}`\n{datetime.now()}")
             return allconfigs
         else:
             sendTo_webhook(
-                f"Failed update âš ï¸\nReason: Invalid password\nKey: `{rqkey}`\n_"
+                f"Failed update Ã¢Å¡Â Ã¯Â¸Â\nReason: Invalid password\nKey: `{rqkey}`\n_"
             )
             return "vless://00000000@incorrectpasskey.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Invalid key | @Iranray_VPN"
-    except:
+    except Exception as e:
+        print(e)
         sendTo_webhook(
-            "Failed update âš ï¸\nReason: Internal server error\n{datetime.now()}\n_"
+            "Failed update Ã¢Å¡Â Ã¯Â¸Â\nReason: Internal server error\n{datetime.now()}\n_"
         )
         return "vless://00000000@internalerror.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Internal error | @Iranray_VPN"
 
@@ -154,17 +155,17 @@ def partnersub():
                     + "\n"
                 )
             sendTo_webhook(
-                f"(CUSTOM) Succussful update âœ…\nKey: `{rqkey}`\n\n{datetime.now()}\n|"
+                f"(CUSTOM) Succussful update Ã¢Å“â€¦\nKey: `{rqkey}`\n\n{datetime.now()}\n|"
             )
             return allconfigs
         else:
             sendTo_webhook(
-                f"(CUSTOM) Failed update (Partner Route)âš ï¸\nReason: Invalid password\nKey: `{rqkey}`\n_"
+                f"(CUSTOM) Failed update (Partner Route)Ã¢Å¡Â Ã¯Â¸Â\nReason: Invalid password\nKey: `{rqkey}`\n_"
             )
             return "vless://00000000@incorrectpasskey.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Invalid key | @Iranray_VPN"
     except:
         sendTo_webhook(
-            "(CUSTOM) Failed update (Partner Route)e âš ï¸\nReason: Internal server error\n{datetime.now()}\n_"
+            "(CUSTOM) Failed update (Partner Route)e Ã¢Å¡Â Ã¯Â¸Â\nReason: Internal server error\n{datetime.now()}\n_"
         )
         return "vless://00000000@internalerror.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Internal error | @Iranray_VPN"
 
