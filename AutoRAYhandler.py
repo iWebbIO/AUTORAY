@@ -8,11 +8,12 @@ import functions as extra
 import pytz
 import os
 
-keysfile_path = "/Settings/keys"
-channelsfile_path = "/Settings/channels"
+settingsdir = "Settings"
+keysfile_path = "keys"
+channelsfile_path = "channels"
 webhook = None # Put your discord webhook url here
 apiSecret = "ql1lGsB7TTO3TOOR2vRjaMgQi2DvmEWtngOkxNtFhTLQaDUne6sZvhRhD0jXUAKC0DtL9EW8fCZO5GdzHaIZyuBM2Re2OdYi"
-
+os.chdir(settingsdir)
 def sendTo_webhook(msgcontent):
     if webhook != None:
         webhook.send(msgcontent)
