@@ -15,7 +15,7 @@
 ### Step 1: Download `dashboard.py`
 - Run the following command to download the `dashboard.py` file<br>
 This script will help you install AutoRAY
-<br>`wget https://github.com/iWebbIO/AUTORAY/releases/download/v1.0.5-RELEASE/dashboard.py`
+<br>`wget https://github.com/iWebbIO/AUTORAY/releases/download/v2.0.1-STABLE/dashboard.py`
 ### Step 2: Update & Upgrade packages using `APT` and install `python3`
 - `sudo apt update && sudo apt upgrade -y && sudo apt install python3 python3-pip`
 ### Step 3: Run `dashboard.py`
