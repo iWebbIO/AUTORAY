@@ -25,7 +25,8 @@ This script will help you install AutoRAY
 ### Step 4: Go through the installation process
 ### Step 5: Set up Channels, Keys and discord webhook
 - Change your directory to the location that you installed AutoRAY and locate the `Settings` folder
-- Insert your Telegram channel IDs in the `channels` file and put your API Access keys in the `keys` file
+- Insert your Telegram channel IDs in the `channels` file with the following format: `CHANNEL_NAME NUMBER_OF_CONFIGS` for example: `somev2raycahannel 10` and seperate them with newlines
+- Insert your API Access keys in the `keys` file and seperate them with new files
 To setup Discord webhooks and log activity on your AutoRAY server visit [How to connect AutoRAY to a Discord Webhook](https://github.com/iWebbIO/AUTORAY/wiki/Connect-AutoRAY-to-a-Discord-webhook)
 
 ### Step 6:
