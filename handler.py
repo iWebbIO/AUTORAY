@@ -11,11 +11,7 @@ import random
 import string
 import pytz
 
-settingsdir = "Settings"
-config_file = os.path.join(settingsdir, "config.json")
-
-if not os.path.exists(settingsdir):
-    os.makedirs(settingsdir)
+config_file = "config.json"
 
 def generate(length):
     characters = string.ascii_letters + string.digits

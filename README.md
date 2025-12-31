@@ -1,48 +1,103 @@
-# AutoRAY - A new Era of VPNs
-### What is AutoRAY?
-- AutoRAY is a python program that connects to the Telegram API and helps you scrape V2ray configurations and pack them into a subscription (Flask Route/HTTP Response)
-### What is it exactly?
-- Clients like [V2rayNG](https://github.com/2dust/v2rayNG) and [Hiddify](https://github.com/hiddify/hiddify-next) let you add subscriptions, This way you can provide the v2ray configs to your client without the need to leave the app.
-- AutoRAY saves a ton of time by doing the "finding the configs" process automatically.
+# AUTORAY
 
-### How can i use it?
-- You have two options, use the community servers OR self-host your own Autoray server
+AUTORAY is a specialized VPN subscription manager and aggregator built with Python and Flask. It automates the process of scraping V2Ray, Xray, Trojan, and Shadowsocks configurations from Telegram channels, aggregates them, and serves them via managed subscription links.
 
-# Community servers
-- You can find community links and server in [autoray-community-servers](https://github.com/iWebbIO/Autoray-public-servers)
+## Features
 
-# Host it yourself! **(Linux DEB)**
-### Step 1: Download `dashboard.py`
-- Run the following command to download the `dashboard.py` file<br>
-This script will help you install AutoRAY
-<br>`wget https://github.com/iWebbIO/AUTORAY/releases/download/v2.0.1-STABLE/dashboard.py`
-### Step 2: Update & Upgrade packages using `APT` and install `python3`
-- `sudo apt update && sudo apt upgrade -y && sudo apt install python3 python3-pip`
-### Step 3: Run `dashboard.py`
-- To install AutoRAY you have to Run the `dashboard.py` script<br>
-- Make sure you are in the dorectory where you downloaded the fle before running this command
-`python3 dashboard.py`
-### Step 4: Go through the installation process
-### Step 5: Set up Channels, Keys and discord webhook
-- Change your directory to the location that you installed AutoRAY and locate the `Settings` folder
-- Insert your Telegram channel IDs in the `channels` file with the following format: `CHANNEL_NAME NUMBER_OF_CONFIGS` for example: `somev2raycahannel 10` and seperate them with newlines
-- Insert your API Access keys in the `keys` file and seperate them with new files
-To setup Discord webhooks and log activity on your AutoRAY server visit [How to connect AutoRAY to a Discord Webhook](https://github.com/iWebbIO/AUTORAY/wiki/Connect-AutoRAY-to-a-Discord-webhook)
+- **Automated Scraping**: Uses `snscrape` to fetch fresh configurations from specified Telegram channels.
+- **Protocol Support**: Parses and cleans `vless`, `vmess`, `trojan`, and `ss` (Shadowsocks) links.
+- **Subscription Management**: Secure access via generated keys.
+- **Smart Caching**: Background caching system to ensure low-latency responses and reduce scraping overhead.
+- **Discord Integration**: Sends real-time notifications (new keys, errors, status updates) to a Discord Webhook.
+- **Multi-Port Support**: Capable of running on multiple ports simultaneously using multiprocessing.
+- **Dynamic Renaming**: Automatically renames configurations with timestamps or custom tags for better organization.
 
-### Step 6:
-- After the installation is complete and the settings are configured, Run the `AutoRAYhandler.py` file by running ```python3 AutoRAYhandler.py```
+## Prerequisites
 
-# Connect to your server
-- to connect to your AutoRAY server, simply use the template below:<br>
-`http://ServerIP:Port/connect?key=YOURKEY`
-### What do these mean?
-- `ServerIP`: Replace with the IP of your server
-- `Port`: Replace with your server's port (Default: 2873)
-- `YOURKEY`: One of the Api Access keys that you inserted into the `/Settings/keys` file
+- Python 3.8+
+- `pip` (Python Package Installer)
 
-For example i have a server that has an IPv4 address (123.456.789.123)
-and i Run the Autoray server on it and i put a key named `free` in the keys file
-This would be the URL i'd have to connect to:
-`http:123.456.789.123:2873/connect?key=FREE`
+## Installation
 
-Remember that the program is case-sensitive and when you choose a key like `hGhKsoiU` you'll have to put the exact same thing when connecting to your server
+1.  **Clone the repository** (or download the source):
+    ```bash
+    git clone <repository-url>
+    cd AUTORAY
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    pip install flask discord.py snscrape pytz
+    ```
+
+## Configuration
+
+Upon the first run, the application will generate a `config.json` file.
+
+**Default Configuration:**
+```json
+{
+    "api_secret": "ql1lGsB7TTO3TOOR2vRjaMgQi2DvmEWtngOkxNtFhTLQaDUne6sZvhRhD0jXUAKC0DtL9EW8fCZO5GdzHaIZyuBM2Re2OdYi",
+    "webhook_url": null,
+    "keys": [],
+    "channels": [],
+    "ports": [2873],
+    "cache_ttl": 1800
+}
+```
+
+- **api_secret**: The master key for administrative API actions. **Change this immediately for security.**
+- **webhook_url**: URL for Discord Webhook notifications.
+- **channels**: List of Telegram channels to scrape.
+- **ports**: Ports the server will listen on.
+- **cache_ttl**: Time-to-live for cached configs in seconds (default: 30 minutes).
+
+## Usage
+
+Start the server:
+```bash
+python handler.py
+```
+
+### API Endpoints
+
+#### User Routes
+- **Get Subscription**:
+  `GET /connect?key=<USER_KEY>`
+  Returns the subscription body containing all scraped configs.
+
+- **Partner/Custom Subscription**:
+  `GET /custom?key=<USER_KEY>&name=<CUSTOM_NAME>`
+  Returns configs renamed with the provided `<CUSTOM_NAME>`.
+
+- **Ping**:
+  `GET /ping`
+  Returns `ALIVE` status.
+
+#### Admin Routes (Requires `secret`)
+
+- **Create Key**:
+  `GET /createkey?secret=<API_SECRET>`
+  Generates a new user key and returns the subscription link.
+
+- **Add Channel**:
+  `GET /addchannel?secret=<API_SECRET>&name=<CHANNEL_ID>&count=<LIMIT>`
+  Adds a Telegram channel to the scraper.
+  - `name`: Channel username (without @).
+  - `count`: Max configs to fetch (default: 25).
+
+- **Remove Channel**:
+  `GET /delchannel?secret=<API_SECRET>&name=<CHANNEL_ID>`
+
+- **Set Webhook**:
+  `GET /setwebhook?secret=<API_SECRET>&url=<WEBHOOK_URL>`
+
+- **Force Refresh**:
+  `GET /freshconnect?secret=<API_SECRET>`
+  Forces a cache update and returns fresh configs.
+
+- **List Channels**:
+  `GET /listchannels?secret=<API_SECRET>`
+
+## Disclaimer
+This tool is for educational purposes only.
