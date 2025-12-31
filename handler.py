@@ -135,8 +135,9 @@ def appendkey():
                 f"Key got added! ✅\nKey: `{target_key}`\n{datetime.now()}"
             )
             return "SUCCESS"
+        return "Access denied"
     except Exception:
-        sendTo_webhook(f"Failed to add {request.args.get('key')} to ")
+        sendTo_webhook(f"Failed to add {request.args.get('targetkey')} to keys")
         return "Failed to add key"
 
 
@@ -169,7 +170,7 @@ def sub():
     except Exception as e:
         print(e)
         sendTo_webhook(
-            "Failed update ⚠️\nReason: Internal server error\n{datetime.now()}\n_"
+            f"Failed update ⚠️\nReason: Internal server error\n{datetime.now()}\n_"
         )
         return "vless://00000000@internalerror.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Internal error | @Iranray_VPN"
 
@@ -202,7 +203,7 @@ def partnersub():
             return "vless://00000000@incorrectpasskey.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Invalid key | @Iranray_VPN"
     except Exception:
         sendTo_webhook(
-            "(CUSTOM) Failed update (Partner Route)e ⚠️\nReason: Internal server error\n{datetime.now()}\n_"
+            f"(CUSTOM) Failed update (Partner Route) ⚠️\nReason: Internal server error\n{datetime.now()}\n_"
         )
         return "vless://00000000@internalerror.xd:200?mode=gun&security=none&encryption=none&type=grpc&serviceName=#ERR: Internal error | @Iranray_VPN"
 
