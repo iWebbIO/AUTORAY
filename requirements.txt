@@ -1,0 +1,4 @@
+Flask
+discord.py
+snscrape
+pytz
