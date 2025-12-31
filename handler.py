@@ -82,7 +82,7 @@ def createkey():
                 f"New key generated! ✅ \nKey: `{newkey}`\n{datetime.now()}"
             )
             # Dynamically generate link based on the current request host
-            return f"Subscription created! ✅ \nKey: `{newkey}`\n\nLink: `http://{request.host}/connect?key={newkey}#WebbTVC-vip`"
+            return f"Subscription created! ✅ \nKey: `{newkey}`\n\nLink: `{request.scheme}://{request.host}/connect?key={newkey}#WebbTVC-vip`"
         else:
             print("AUTH_ERROR /createkey")
     except Exception as e:
@@ -94,7 +94,7 @@ def createkey():
 def returnallkeys():
     config = load_config()
     sendTo_webhook("⚠️ Warning!\nThe Allkeys route has been triggered")
-    if request.args.get("key") == config["api_secret"]:
+    if request.args.get("secret") == config["api_secret"]:
         sendTo_webhook("Access granted ✅\n|")
         return "\n".join(config["keys"])
     else:
@@ -128,9 +128,10 @@ def appendkey():
     try:
         if request.args.get("secret") == config["api_secret"]:
             target_key = request.args.get("targetkey")
-            if target_key:
-                config["keys"].append(target_key)
-                save_config(config)
+            if not target_key:
+                return "Missing target key"
+            config["keys"].append(target_key)
+            save_config(config)
             sendTo_webhook(
                 f"Key got added! ✅\nKey: `{target_key}`\n{datetime.now()}"
             )
@@ -155,7 +156,8 @@ def sub():
                 allconfigs += (
                     tvc.subscription(
                         channel_name=i.get("name"),
-                        config_count=int(i.get("count", 25)),
+                        channel_config=i,
+                        config_count=int(i.get("scrape_limit", i.get("count", 25))),
                         config_name=f"AutoRAY | {currentdatetime}",
                     )
                     + "\n"
@@ -188,7 +190,10 @@ def partnersub():
             for i in item_list:
                 allconfigs += (
                     tvc.subscription(
-                        channel_name=i.get("name"), config_count=int(i.get("count", 25)), config_name=rqname
+                        channel_name=i.get("name"),
+                        channel_config=i,
+                        config_count=int(i.get("scrape_limit", i.get("count", 25))),
+                        config_name=rqname
                     )
                     + "\n"
                 )
@@ -213,23 +218,40 @@ def addchannel():
     config = load_config()
     if request.args.get("secret") == config["api_secret"]:
         name = request.args.get("name")
-        count = request.args.get("count")
+        
+        # New parameters
+        mode = request.args.get("mode", "count") # 'count' or 'time'
+        limit = request.args.get("limit", 25)    # Message count limit
+        days = request.args.get("days", 0)       # Days to look back
+        hours = request.args.get("hours", 0)     # Hours to look back
         
         if not name:
             return "Missing channel name"
             
         try:
-            count = int(count) if count else 25
+            limit = int(limit)
+            days = int(days)
+            hours = int(hours)
         except ValueError:
-            return "Invalid count"
+            return "Invalid number format"
 
         for channel in config["channels"]:
             if channel["name"] == name:
                 return "Channel already exists"
 
-        config["channels"].append({"name": name, "count": count})
+        new_channel = {
+            "name": name,
+            "scrape_mode": mode,
+            "scrape_limit": limit,
+            "scrape_days": days,
+            "scrape_hours": hours,
+            # Maintain backward compatibility for 'count' key if needed by other tools
+            "count": limit 
+        }
+
+        config["channels"].append(new_channel)
         save_config(config)
-        sendTo_webhook(f"Channel added! ✅\nName: `{name}`\nCount: `{count}`\n{datetime.now()}")
+        sendTo_webhook(f"Channel added! ✅\nName: `{name}`\nMode: `{mode}`\n{datetime.now()}")
         return "SUCCESS"
     return "Access denied"
 
@@ -283,13 +305,14 @@ def fresh_connect():
         item_list = config["channels"]
         for i in item_list:
             # Force update cache
-            tvc.update_cache(i.get("name"), 55)
+            tvc.update_cache(i.get("name"), i)
             
             currentdatetime = get_current_time()
             allconfigs += (
                 tvc.subscription(
                     channel_name=i.get("name"),
-                    config_count=int(i.get("count", 25)),
+                    channel_config=i,
+                    config_count=int(i.get("scrape_limit", i.get("count", 25))),
                     config_name=f"AutoRAY | {currentdatetime}",
                 )
                 + "\n"
@@ -306,7 +329,7 @@ def background_cache_updater():
             config = load_config()
             ttl = int(config.get("cache_ttl", 1800))
             for channel in config["channels"]:
-                tvc.update_cache(channel.get("name"), 55)
+                tvc.update_cache(channel.get("name"), channel)
         except Exception as e:
             print(f"Background update error: {e}")
         time.sleep(ttl)

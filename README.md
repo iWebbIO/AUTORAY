@@ -40,7 +40,13 @@ Upon the first run, the application will generate a `config.json` file.
     "api_secret": "ql1lGsB7TTO3TOOR2vRjaMgQi2DvmEWtngOkxNtFhTLQaDUne6sZvhRhD0jXUAKC0DtL9EW8fCZO5GdzHaIZyuBM2Re2OdYi",
     "webhook_url": null,
     "keys": [],
-    "channels": [],
+    "channels": [
+        {
+            "name": "example_channel",
+            "scrape_mode": "time",
+            "scrape_days": 1
+        }
+    ],
     "ports": [2873],
     "cache_ttl": 1800
 }
@@ -81,10 +87,13 @@ python handler.py
   Generates a new user key and returns the subscription link.
 
 - **Add Channel**:
-  `GET /addchannel?secret=<API_SECRET>&name=<CHANNEL_ID>&count=<LIMIT>`
+  `GET /addchannel?secret=<API_SECRET>&name=<CHANNEL_ID>&mode=<MODE>&limit=<LIMIT>&days=<DAYS>`
   Adds a Telegram channel to the scraper.
   - `name`: Channel username (without @).
-  - `count`: Max configs to fetch (default: 25).
+  - `mode`: `count` (default) or `time`.
+  - `limit`: Max messages to scan (used in `count` mode, default: 25).
+  - `days`: Number of days to look back (used in `time` mode).
+  - `hours`: Number of hours to look back (used in `time` mode).
 
 - **Remove Channel**:
   `GET /delchannel?secret=<API_SECRET>&name=<CHANNEL_ID>`

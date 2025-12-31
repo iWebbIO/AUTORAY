@@ -1,0 +1,589 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoRay Manager</title>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Layout */
+        header { background: var(--bg-card); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; background-color: var(--danger); transition: background 0.3s; }
+        .status-dot.alive { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+
+        .container { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Sidebar */
+        aside { width: 250px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 1rem; }
+        .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 10px 15px; text-align: left; cursor: pointer; border-radius: 6px; font-size: 1rem; transition: 0.2s; margin-bottom: 5px; }
+        .nav-btn:hover { background: var(--bg-input); color: var(--text-main); }
+        .nav-btn.active { background: var(--primary); color: white; }
+
+        /* Main Content */
+        main { flex: 1; padding: 2rem; overflow-y: auto; position: relative; }
+        .panel { display: none; max-width: 1000px; margin: 0 auto; }
+        .panel.active { display: block; animation: fadein 0.3s; }
+
+        h2 { margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { margin: 1.5rem 0 1rem 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Components */
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+        input, select { width: 100%; padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); }
+        
+        .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+        button { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { opacity: 0.9; }
+        .btn-secondary { background: var(--bg-input); color: var(--text-main); }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+
+        /* Lists & Tables */
+        .item-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .list-item { background: var(--bg-input); padding: 0.75rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .list-item code { font-family: monospace; color: var(--primary); }
+
+        /* Output Box */
+        textarea.output { width: 100%; height: 150px; background: #000; color: #0f0; font-family: monospace; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; resize: vertical; margin-top: 1rem; }
+
+        /* Settings Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: var(--bg-card); padding: 2rem; border-radius: 10px; width: 400px; border: 1px solid var(--border); }
+        .modal h3 { margin-top: 0; }
+
+        /* Toast */
+        #toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); border-left: 4px solid var(--primary); padding: 1rem 2rem; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateY(100px); transition: 0.3s; z-index: 2000; }
+        #toast.show { transform: translateY(0); }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        
+        @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <div class="status-dot" id="statusDot"></div>
+        AUTORAY MANAGER
+    </div>
+    <button class="btn-secondary btn-sm" onclick="openSettings()">⚙️ Settings</button>
+</header>
+
+<div class="container">
+    <aside>
+        <button class="nav-btn active" onclick="showPanel('user')">👤 User Panel</button>
+        <button class="nav-btn" onclick="showPanel('admin-keys')">🔑 Key Manager</button>
+        <button class="nav-btn" onclick="showPanel('admin-channels')">📡 Channels</button>
+        <button class="nav-btn" onclick="showPanel('admin-system')">🖥️ System</button>
+    </aside>
+
+    <main>
+        <!-- USER PANEL -->
+        <div id="panel-user" class="panel active">
+            <h2>User Subscription</h2>
+            <div class="card">
+                <div class="form-group">
+                    <label>User Key</label>
+                    <input type="text" id="userKeyInput" placeholder="Enter your key (e.g. abc123xyz)">
+                </div>
+                <div class="btn-row">
+                    <button class="btn-primary" onclick="userConnect()">Get Subscription</button>
+                    <button class="btn-secondary" onclick="toggleCustomName()">Custom Name...</button>
+                </div>
+                
+                <div id="customNameRow" class="form-group hidden" style="margin-top: 15px;">
+                    <label>Device Name / Tag</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="customNameInput" placeholder="e.g. MyiPhone">
+                        <button class="btn-primary" onclick="userCustomConnect()">Get Custom Sub</button>
+                    </div>
+                </div>
+
+                <textarea id="userOutput" class="output" readonly placeholder="Links will appear here..."></textarea>
+                <div class="btn-row">
+                    <button class="btn-secondary btn-sm" onclick="copyToClipboard('userOutput')">Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN KEYS -->
+        <div id="panel-admin-keys" class="panel">
+            <h2>Key Management</h2>
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="btn-row">
+                    <button class="btn-primary" onclick="createKey()">➕ Generate New Key</button>
+                </div>
+                <div id="newKeyResult" class="hidden" style="margin-top:1rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 6px;">
+                    <p style="color: var(--success)">Key Created!</p>
+                    <code id="createdKeyDisplay" style="display:block; margin: 5px 0; font-size: 1.2rem;"></code>
+                    <textarea id="createdKeyLink" class="output" style="height: 80px;" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Manual Add</h3>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="manualKeyInput" placeholder="Enter specific key string">
+                    <button class="btn-secondary" onclick="addManualKey()">Add</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="flex-between">
+                    <h3>Active Keys</h3>
+                    <button class="btn-secondary btn-sm" onclick="loadKeys()">Refresh List</button>
+                </div>
+                <div id="keysList" class="item-list" style="margin-top: 1rem;">
+                    <!-- Keys loaded here -->
+                    <div style="text-align: center; color: var(--text-muted);">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN CHANNELS -->
+        <div id="panel-admin-channels" class="panel">
+            <h2>Channel Management</h2>
+            
+            <div class="card">
+                <h3>Add Telegram Channel</h3>
+                <div class="form-group">
+                    <label>Channel Username (without @)</label>
+                    <input type="text" id="chName" placeholder="v2ray_channel">
+                </div>
+                <div class="form-group">
+                    <label>Scraping Mode</label>
+                    <select id="chMode" onchange="toggleChInputs()">
+                        <option value="count">Count (Last X Messages)</option>
+                        <option value="time">Time (Last X Days/Hours)</option>
+                    </select>
+                </div>
+                
+                <div id="input-count" class="form-group">
+                    <label>Message Limit</label>
+                    <input type="number" id="chLimit" value="25">
+                </div>
+
+                <div id="input-time" class="form-group hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label>Days</label>
+                            <input type="number" id="chDays" value="0">
+                        </div>
+                        <div>
+                            <label>Hours</label>
+                            <input type="number" id="chHours" value="1">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="addChannel()">Add Channel</button>
+            </div>
+
+            <div class="card">
+                <div class="flex-between">
+                    <h3>Monitored Channels</h3>
+                    <button class="btn-secondary btn-sm" onclick="loadChannels()">Refresh List</button>
+                </div>
+                <div id="channelList" class="item-list" style="margin-top: 1rem;">
+                    <!-- Channels loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN SYSTEM -->
+        <div id="panel-admin-system" class="panel">
+            <h2>System Management</h2>
+            
+            <div class="card">
+                <h3>Core Actions</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">Trigger an immediate scrape of all channels and update the cache.</p>
+                <button class="btn-primary" onclick="forceRefresh()">🔄 Force Refresh & Re-Scrape</button>
+                <textarea id="refreshOutput" class="output hidden" readonly></textarea>
+            </div>
+
+            <div class="card">
+                <h3>Notifications</h3>
+                <div class="form-group">
+                    <label>Discord Webhook URL</label>
+                    <input type="text" id="webhookUrl" placeholder="https://discord.com/api/webhooks/...">
+                </div>
+                <button class="btn-secondary" onclick="setWebhook()">Set Webhook</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+        <h3>Connection Settings</h3>
+        <div class="form-group">
+            <label>Server Base URL</label>
+            <input type="text" id="confUrl" placeholder="http://localhost:2873">
+        </div>
+        <div class="form-group">
+            <label>Admin Secret</label>
+            <input type="password" id="confSecret" placeholder="Secret from config.json">
+        </div>
+        <div class="btn-row">
+            <button class="btn-primary" onclick="saveSettings()">Save & Close</button>
+            <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast">Message</div>
+
+<script>
+    // --- State Management ---
+    const STATE = {
+        baseUrl: localStorage.getItem('autoray_url') || 'http://localhost:2873',
+        secret: localStorage.getItem('autoray_secret') || '',
+        currentTab: 'user'
+    };
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Pre-fill user key if they used it before
+        const storedKey = localStorage.getItem('autoray_userkey');
+        if(storedKey) document.getElementById('userKeyInput').value = storedKey;
+
+        pingServer();
+        setInterval(pingServer, 30000); // Check health every 30s
+    });
+
+    // --- Navigation ---
+    function showPanel(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(`panel-${id}`).classList.add('active');
+        // Find button that calls this function
+        const btns = Array.from(document.querySelectorAll('.nav-btn'));
+        const activeBtn = btns.find(b => b.getAttribute('onclick').includes(id));
+        if(activeBtn) activeBtn.classList.add('active');
+
+        // Load data if admin tab
+        if(id.startsWith('admin')) {
+            if(!STATE.secret) {
+                showToast('Admin Secret is missing. Please check Settings.', 'error');
+                openSettings();
+            } else {
+                if(id === 'admin-keys') loadKeys();
+                if(id === 'admin-channels') loadChannels();
+            }
+        }
+    }
+
+    function toggleCustomName() {
+        document.getElementById('customNameRow').classList.toggle('hidden');
+    }
+
+    function toggleChInputs() {
+        const mode = document.getElementById('chMode').value;
+        if(mode === 'count') {
+            document.getElementById('input-count').classList.remove('hidden');
+            document.getElementById('input-time').classList.add('hidden');
+        } else {
+            document.getElementById('input-count').classList.add('hidden');
+            document.getElementById('input-time').classList.remove('hidden');
+        }
+    }
+
+    // --- API Helper ---
+    async function apiCall(endpoint, params = {}, method = 'GET') {
+        // Clean base URL trailing slash
+        const base = STATE.baseUrl.replace(/\/$/, "");
+        
+        // Construct Query String
+        const urlParams = new URLSearchParams(params);
+        const url = `${base}${endpoint}?${urlParams.toString()}`;
+
+        try {
+            const res = await fetch(url, { method: method });
+            const text = await res.text();
+            
+            // Check for common error strings from API
+            if(text.includes("Access denied")) throw new Error("Access Denied: Invalid Secret");
+            if(text.includes("Missing")) throw new Error(text);
+            
+            return text;
+        } catch (e) {
+            console.error(e);
+            showToast(`Error: ${e.message}`, 'error');
+            return null;
+        }
+    }
+
+    async function pingServer() {
+        const dot = document.getElementById('statusDot');
+        const res = await apiCall('/ping');
+        if(res && res.trim() === 'ALIVE') {
+            dot.classList.add('alive');
+        } else {
+            dot.classList.remove('alive');
+        }
+    }
+
+    // --- User Actions ---
+    async function userConnect() {
+        const key = document.getElementById('userKeyInput').value.trim();
+        if(!key) return showToast('Please enter a user key', 'error');
+        
+        localStorage.setItem('autoray_userkey', key);
+        
+        const res = await apiCall('/connect', { key });
+        if(res) {
+            document.getElementById('userOutput').value = res;
+            if(res.includes("incorrectpasskey")) showToast('Warning: Invalid Key detected', 'error');
+            else showToast('Subscription fetched successfully', 'success');
+        }
+    }
+
+    async function userCustomConnect() {
+        const key = document.getElementById('userKeyInput').value.trim();
+        const name = document.getElementById('customNameInput').value.trim();
+        
+        if(!key || !name) return showToast('Key and Custom Name required', 'error');
+        
+        const res = await apiCall('/custom', { key, name });
+        if(res) {
+            document.getElementById('userOutput').value = res;
+            showToast('Custom subscription fetched', 'success');
+        }
+    }
+
+    // --- Admin: Keys ---
+    async function loadKeys() {
+        const container = document.getElementById('keysList');
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Loading...</div>';
+        
+        const res = await apiCall('/allkeys', { secret: STATE.secret });
+        if(res !== null) {
+            container.innerHTML = '';
+            const keys = res.split('\n').filter(k => k.trim() !== '');
+            
+            if(keys.length === 0) container.innerHTML = '<div style="text-align:center">No keys found.</div>';
+
+            keys.forEach(key => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <code>${key}</code>
+                    <button class="btn-danger btn-sm" onclick="deleteKey('${key}')">Delete</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+    }
+
+    async function createKey() {
+        const res = await apiCall('/createkey', { secret: STATE.secret });
+        if(res) {
+            // Parse response to find key. Usually: "Success! Key: XYZ123..."
+            // But let's just display the whole message and regex the key for display
+            document.getElementById('newKeyResult').classList.remove('hidden');
+            document.getElementById('createdKeyLink').value = res; // Contains the full link usually
+            
+            // Try to extract key visually (Simple heuristic based on documentation example)
+            // If the API returns a full link vless://...?key=XYZ, we might not extract it easily without regex
+            // Assuming response contains the key string cleanly or in a text sentence
+            showToast('Key generated', 'success');
+            loadKeys();
+        }
+    }
+
+    async function addManualKey() {
+        const targetkey = document.getElementById('manualKeyInput').value.trim();
+        if(!targetkey) return;
+
+        const res = await apiCall('/addkey', { secret: STATE.secret, targetkey });
+        if(res && res.includes('SUCCESS')) {
+            showToast('Key added', 'success');
+            document.getElementById('manualKeyInput').value = '';
+            loadKeys();
+        } else {
+            showToast('Failed to add key', 'error');
+        }
+    }
+
+    async function deleteKey(targetkey) {
+        if(!confirm(`Revoke access for key: ${targetkey}?`)) return;
+        
+        const res = await apiCall('/delkey', { secret: STATE.secret, targetkey });
+        if(res && res.includes('SUCCESS')) {
+            showToast('Key deleted', 'success');
+            loadKeys();
+        } else {
+            showToast(res || 'Delete failed', 'error');
+        }
+    }
+
+    // --- Admin: Channels ---
+    async function loadChannels() {
+        const container = document.getElementById('channelList');
+        // The API /listchannels endpoint usually returns JSON
+        const res = await apiCall('/listchannels', { secret: STATE.secret });
+        
+        if(res) {
+            container.innerHTML = '';
+            try {
+                const channels = JSON.parse(res);
+                if(Object.keys(channels).length === 0) {
+                    container.innerHTML = '<div style="text-align:center">No channels monitored.</div>';
+                    return;
+                }
+
+                // Channels is likely an object { "channelName": { mode:..., val:... } }
+                for (const [name, config] of Object.entries(channels)) {
+                    const div = document.createElement('div');
+                    div.className = 'list-item';
+                    
+                    let details = '';
+                    if(config.mode === 'count') details = `Mode: Count (${config.limit})`;
+                    else details = `Mode: Time (${config.days}d ${config.hours}h)`;
+
+                    div.innerHTML = `
+                        <div>
+                            <strong>@${name}</strong>
+                            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:10px;">${details}</span>
+                        </div>
+                        <button class="btn-danger btn-sm" onclick="delChannel('${name}')">Remove</button>
+                    `;
+                    container.appendChild(div);
+                }
+            } catch (e) {
+                container.innerHTML = 'Error parsing channel list.';
+            }
+        }
+    }
+
+    async function addChannel() {
+        const name = document.getElementById('chName').value.trim();
+        const mode = document.getElementById('chMode').value;
+        const limit = document.getElementById('chLimit').value;
+        const days = document.getElementById('chDays').value;
+        const hours = document.getElementById('chHours').value;
+
+        if(!name) return showToast('Channel name required', 'error');
+
+        const params = { secret: STATE.secret, name, mode };
+        if(mode === 'count') params.limit = limit;
+        if(mode === 'time') {
+            params.days = days;
+            params.hours = hours;
+        }
+
+        // Endpoint returns nothing specific on success usually, or text
+        await apiCall('/addchannel', params);
+        showToast('Channel added (if valid)', 'success');
+        document.getElementById('chName').value = '';
+        loadChannels();
+    }
+
+    async function delChannel(name) {
+        if(!confirm(`Stop monitoring @${name}?`)) return;
+        await apiCall('/delchannel', { secret: STATE.secret, name });
+        showToast('Channel removed', 'success');
+        loadChannels();
+    }
+
+    // --- Admin: System ---
+    async function forceRefresh() {
+        const out = document.getElementById('refreshOutput');
+        out.classList.remove('hidden');
+        out.value = "Scraping... please wait...";
+        
+        const res = await apiCall('/freshconnect', { secret: STATE.secret });
+        if(res) {
+            out.value = "Scrape Complete. Raw Data:\n\n" + res.substring(0, 500) + "...";
+            showToast('System Refreshed', 'success');
+        }
+    }
+
+    async function setWebhook() {
+        const url = document.getElementById('webhookUrl').value.trim();
+        if(!url) return;
+        
+        await apiCall('/setwebhook', { secret: STATE.secret, url });
+        showToast('Webhook Updated', 'success');
+    }
+
+    // --- Settings Modal ---
+    function openSettings() {
+        document.getElementById('confUrl').value = STATE.baseUrl;
+        document.getElementById('confSecret').value = STATE.secret;
+        document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettings() {
+        document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function saveSettings() {
+        const newUrl = document.getElementById('confUrl').value.trim();
+        const newSecret = document.getElementById('confSecret').value.trim();
+        
+        if(!newUrl) return showToast('URL is required', 'error');
+
+        STATE.baseUrl = newUrl;
+        STATE.secret = newSecret;
+        
+        localStorage.setItem('autoray_url', newUrl);
+        localStorage.setItem('autoray_secret', newSecret);
+        
+        closeSettings();
+        showToast('Settings Saved', 'success');
+        pingServer();
+    }
+
+    // --- Utilities ---
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function copyToClipboard(elementId) {
+        const copyText = document.getElementById(elementId);
+        if(!copyText.value) return;
+        
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        showToast('Copied to clipboard!');
+    }
+</script>
+</body>
+</html>
