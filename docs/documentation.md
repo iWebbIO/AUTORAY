@@ -193,3 +193,11 @@ To configure, edit the `ports` array in `config.json`:
 
 ### Background Caching
 A daemon thread runs in the background (per process) to keep the cache warm. This ensures that when a user requests `/connect`, the server serves data from RAM immediately rather than waiting for the scraper to fetch data from Telegram.
+
+---
+
+## 7. Web Manager
+
+A graphical web interface is available to manage your AUTORAY instance without interacting directly with the API endpoints.
+
+- **URL**: https://iwebbio.github.io/AUTORAY/manager/

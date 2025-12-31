@@ -11,6 +11,7 @@ AUTORAY is a specialized VPN subscription manager and aggregator built with Pyth
 - **Discord Integration**: Sends real-time notifications (new keys, errors, status updates) to a Discord Webhook.
 - **Multi-Port Support**: Capable of running on multiple ports simultaneously using multiprocessing.
 - **Dynamic Renaming**: Automatically renames configurations with timestamps or custom tags for better organization.
+- **Web Manager**: A hosted web interface for easy management of keys and channels.
 
 ## Prerequisites
 
