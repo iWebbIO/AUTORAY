@@ -324,6 +324,9 @@
         // Clean base URL trailing slash
         const base = STATE.baseUrl.replace(/\/$/, "");
         
+        // Add cache buster
+        params['_'] = new Date().getTime();
+
         // Construct Query String
         const urlParams = new URLSearchParams(params);
         const url = `${base}${endpoint}?${urlParams.toString()}`;
@@ -451,26 +454,54 @@
     // --- Admin: Channels ---
     async function loadChannels() {
         const container = document.getElementById('channelList');
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Loading...</div>';
         // The API /listchannels endpoint usually returns JSON
         const res = await apiCall('/listchannels', { secret: STATE.secret });
         
         if(res) {
             container.innerHTML = '';
             try {
-                const channels = JSON.parse(res);
-                if(Object.keys(channels).length === 0) {
+                let channels = JSON.parse(res);
+                let channelArray = [];
+
+                // Normalize data to array
+                if (Array.isArray(channels)) {
+                    channelArray = channels;
+                } else if (typeof channels === 'object' && channels !== null) {
+                    channelArray = Object.entries(channels).map(([k, v]) => {
+                        if (typeof v !== 'object') return { name: k, count: v };
+                        if (!v.name) v.name = k;
+                        return v;
+                    });
+                }
+
+                if(channelArray.length === 0) {
                     container.innerHTML = '<div style="text-align:center">No channels monitored.</div>';
                     return;
                 }
 
-                // Channels is likely an object { "channelName": { mode:..., val:... } }
-                for (const [name, config] of Object.entries(channels)) {
+                channelArray.forEach(conf => {
+                    if (!conf || typeof conf !== 'object') return;
+
                     const div = document.createElement('div');
                     div.className = 'list-item';
                     
+                    const name = conf.name || 'Unknown';
+                    const mode = conf.scrape_mode || 'count';
                     let details = '';
-                    if(config.mode === 'count') details = `Mode: Count (${config.limit})`;
-                    else details = `Mode: Time (${config.days}d ${config.hours}h)`;
+                    
+                    if(mode === 'count') {
+                        let limit = conf.scrape_limit;
+                        if (limit === undefined || limit === null) limit = conf.count;
+                        if (limit === undefined || limit === null) limit = 25;
+                        details = `Mode: Count (${limit})`;
+                    } else if (mode === 'time') {
+                        const d = conf.scrape_days || 0;
+                        const h = conf.scrape_hours || 0;
+                        details = `Mode: Time (${d}d ${h}h)`;
+                    } else {
+                        details = `Mode: ${mode}`;
+                    }
 
                     div.innerHTML = `
                         <div>
@@ -480,10 +511,13 @@
                         <button class="btn-danger btn-sm" onclick="delChannel('${name}')">Remove</button>
                     `;
                     container.appendChild(div);
-                }
+                });
             } catch (e) {
+                console.error(e);
                 container.innerHTML = 'Error parsing channel list.';
             }
+        } else {
+            container.innerHTML = '<div style="text-align:center; color:var(--danger)">Failed to load channels.</div>';
         }
     }
 
@@ -497,24 +531,31 @@
         if(!name) return showToast('Channel name required', 'error');
 
         const params = { secret: STATE.secret, name, mode };
-        if(mode === 'count') params.limit = limit;
+        if(mode === 'count') params.limit = limit || 25;
         if(mode === 'time') {
-            params.days = days;
-            params.hours = hours;
+            params.days = days || 0;
+            params.hours = hours || 0;
         }
 
-        // Endpoint returns nothing specific on success usually, or text
-        await apiCall('/addchannel', params);
-        showToast('Channel added (if valid)', 'success');
-        document.getElementById('chName').value = '';
-        loadChannels();
+        const res = await apiCall('/addchannel', params);
+        if(res && res.includes('SUCCESS')) {
+            showToast('Channel added', 'success');
+            document.getElementById('chName').value = '';
+            loadChannels();
+        } else {
+            showToast(res || 'Failed to add channel', 'error');
+        }
     }
 
     async function delChannel(name) {
         if(!confirm(`Stop monitoring @${name}?`)) return;
-        await apiCall('/delchannel', { secret: STATE.secret, name });
-        showToast('Channel removed', 'success');
-        loadChannels();
+        const res = await apiCall('/delchannel', { secret: STATE.secret, name });
+        if(res && res.includes('SUCCESS')) {
+            showToast('Channel removed', 'success');
+            loadChannels();
+        } else {
+            showToast(res || 'Failed to remove channel', 'error');
+        }
     }
 
     // --- Admin: System ---

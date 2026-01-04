@@ -7,7 +7,7 @@
     ],
     "channels": [
         {
-            "name": "v2rayng_fa",
+            "name": "configx2ray",
             "count": 25
         },
         {
@@ -16,7 +16,7 @@
         }
     ],
     "ports": [
-        2873
+        8083
     ],
     "cache_ttl": 1800
 }
